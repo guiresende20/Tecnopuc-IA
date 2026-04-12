@@ -276,7 +276,7 @@ export default function AdminPage() {
                   <li key={src.id}>
                     <span><strong>{src.title}</strong> <em>({src.type})</em> - Última atualização: {new Date(src.created_at).toLocaleDateString()}</span>
                     <div>
-                      <button className="primary-btn" style={{marginRight: '0.5rem', padding: '0.4rem 0.8rem'}} onClick={() => startEdit(src)}>Editar</button>
+                      <button className="primary-btn" style={{padding: '0.4rem 0.8rem'}} onClick={() => startEdit(src)}>Editar</button>
                       <button className="danger-btn" onClick={() => deleteDoc(src.id)}>Apagar</button>
                     </div>
                   </li>
