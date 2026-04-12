@@ -44,14 +44,13 @@ export function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
     setStatus('connecting');
 
     try {
-      // 1. Busca o systemInstruction enriquecido com RAG da API route
+      // 1. Busca o systemInstruction enriquecido com RAG e a API Key remotamente
       const res = await fetch('/api/voice-context');
-      const { systemInstruction } = await res.json();
+      const { systemInstruction, apiKey } = await res.json();
 
       // 2. Cria e inicia a sessão Gemini Live
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? '';
       if (!apiKey) {
-        throw new Error('NEXT_PUBLIC_GEMINI_API_KEY não configurada.');
+        throw new Error('Chave da API Gemini não localizada no servidor.');
       }
 
       const chat = new GeminiLiveChat(apiKey, {

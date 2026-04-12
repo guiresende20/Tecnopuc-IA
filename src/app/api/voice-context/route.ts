@@ -41,7 +41,10 @@ export async function GET() {
     const basePrompt = settings.system_prompt;
     const systemInstruction = buildSystemPrompt(context, basePrompt);
 
-    return NextResponse.json({ systemInstruction });
+    return NextResponse.json({ 
+      systemInstruction,
+      apiKey: process.env.GEMINI_API_KEY
+    });
   } catch (error) {
     console.error('[/api/voice-context] Erro:', error);
 
@@ -53,6 +56,9 @@ export async function GET() {
       fallbackBase
     );
 
-    return NextResponse.json({ systemInstruction: fallbackInstruction });
+    return NextResponse.json({ 
+      systemInstruction: fallbackInstruction,
+      apiKey: process.env.GEMINI_API_KEY
+    });
   }
 }
