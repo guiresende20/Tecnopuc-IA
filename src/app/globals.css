@@ -138,6 +138,11 @@ p {
   to   { transform: rotate(360deg); }
 }
 
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 0.35s ease forwards;
 }

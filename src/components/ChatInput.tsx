@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, KeyboardEvent } from 'react';
+import { useState, useRef, KeyboardEvent, useCallback } from 'react';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -9,7 +9,11 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [value, setValue] = useState('');
+  const [focused, setFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleFocus = useCallback(() => setFocused(true), []);
+  const handleBlur = useCallback(() => setFocused(false), []);
 
   const handleSend = () => {
     const trimmed = value.trim();
@@ -51,12 +55,12 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           gap: 10,
           alignItems: 'flex-end',
           background: 'var(--surface-secondary)',
-          border: '1px solid var(--surface-border)',
+          border: `1px solid ${focused ? 'var(--color-ocre)' : 'var(--surface-border)'}`,
           borderRadius: 'var(--radius-lg)',
           padding: '10px 12px',
           transition: 'border-color 0.2s',
+          boxShadow: focused ? '0 0 0 2px rgba(234,152,47,0.15)' : 'none',
         }}
-        onFocus={() => {}}
       >
         <textarea
           ref={textareaRef}
@@ -65,6 +69,8 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onInput={handleInput}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           placeholder="Pergunte sobre o TecnoPUC..."
           disabled={disabled}
           rows={1}
