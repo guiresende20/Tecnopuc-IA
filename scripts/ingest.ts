@@ -2,6 +2,9 @@
 // Script para ingestão local da knowledge base no Supabase.
 // Execute com: npx tsx scripts/ingest.ts
 // Requer: .env.local configurado com GEMINI_API_KEY e SUPABASE_*
+//
+// Cada arquivo .md é registrado em knowledge_sources (visível no painel admin)
+// e seus chunks são indexados em documents com o source_id correspondente.
 
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
@@ -51,6 +54,42 @@ async function generateEmbedding(text: string): Promise<number[]> {
   return result.embedding.values;
 }
 
+// Extrai o título do primeiro heading # do arquivo, ou usa o nome do arquivo
+function extractTitle(content: string, filename: string): string {
+  const match = content.match(/^#\s+(.+)/m);
+  return match ? match[1].trim() : filename.replace('.md', '').replace(/-/g, ' ');
+}
+
+// Registra ou atualiza o arquivo em knowledge_sources e retorna o source_id
+async function upsertKnowledgeSource(filename: string, title: string, content: string): Promise<string> {
+  // Verifica se já existe uma entrada com esse filename nos metadados
+  const { data: existing } = await supabase
+    .from('knowledge_sources')
+    .select('id')
+    .eq('title', title)
+    .eq('type', 'file')
+    .maybeSingle();
+
+  if (existing) {
+    // Atualiza conteúdo
+    await supabase
+      .from('knowledge_sources')
+      .update({ content })
+      .eq('id', existing.id);
+    return existing.id;
+  }
+
+  // Cria novo registro
+  const { data: created, error } = await supabase
+    .from('knowledge_sources')
+    .insert({ title, content, type: 'file' })
+    .select('id')
+    .single();
+
+  if (error || !created) throw new Error(`Erro ao criar knowledge_source: ${error?.message}`);
+  return created.id;
+}
+
 async function main() {
   const knowledgeDir = path.join(process.cwd(), 'knowledge');
 
@@ -68,19 +107,18 @@ async function main() {
     console.log(`📄 Processando: ${file}`);
     const filePath = path.join(knowledgeDir, file);
     const content = fs.readFileSync(filePath, 'utf-8');
+    const title = extractTitle(content, file);
+
+    // 1. Registra/atualiza em knowledge_sources
+    const sourceId = await upsertKnowledgeSource(file, title, content);
+
+    // 2. Remove chunks antigos (por source_id ou por nome de arquivo legado)
+    await supabase.from('documents').delete().eq('metadata->>source_id', sourceId);
+    await supabase.from('documents').delete().eq('metadata->>source', file);
+
+    // 3. Indexa os novos chunks
     const chunks = chunkText(content);
 
-    // Remove versão anterior do arquivo
-    const { error: deleteError } = await supabase
-      .from('documents')
-      .delete()
-      .eq('metadata->>source', file);
-
-    if (deleteError) {
-      console.warn(`   ⚠️  Erro ao deletar versão anterior: ${deleteError.message}`);
-    }
-
-    // Indexa cada chunk
     for (let i = 0; i < chunks.length; i++) {
       process.stdout.write(`   chunk ${i + 1}/${chunks.length}...\r`);
 
@@ -88,7 +126,7 @@ async function main() {
 
       const { error } = await supabase.from('documents').insert({
         content: chunks[i],
-        metadata: { source: file, chunkIndex: i },
+        metadata: { source_id: sourceId, source: file, title, chunkIndex: i },
         embedding,
       });
 
@@ -96,7 +134,6 @@ async function main() {
         console.error(`\n   ❌  Erro ao inserir chunk ${i}: ${error.message}`);
       }
 
-      // Pequena pausa para não sobrecarregar a API de embeddings
       await new Promise((r) => setTimeout(r, 150));
     }
 
@@ -105,6 +142,7 @@ async function main() {
   }
 
   console.log(`\n🎉 Ingestão concluída! ${files.length} arquivo(s), ${totalChunks} chunk(s) total.\n`);
+  console.log('📋 Todos os arquivos agora aparecem na área admin em "Documentos Atuais".\n');
 }
 
 main().catch((err) => {
