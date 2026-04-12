@@ -4,7 +4,7 @@
 // Como a Live API não suporta RAG dinâmico, o contexto é pré-carregado no system prompt.
 
 import { NextResponse } from 'next/server';
-import { matchDocuments, getSystemPrompt, supabase } from '@/lib/supabase';
+import { matchDocuments, getSettings, supabase } from '@/lib/supabase';
 import { buildSystemPrompt } from '@/lib/gemini';
 
 export const runtime = 'nodejs';
@@ -37,7 +37,8 @@ export async function GET() {
             .join('\n\n---\n\n')
         : 'Base de conhecimento ainda não indexada.';
 
-    const basePrompt = await getSystemPrompt();
+    const settings = await getSettings();
+    const basePrompt = settings.system_prompt;
     const systemInstruction = buildSystemPrompt(context, basePrompt);
 
     return NextResponse.json({ systemInstruction });
@@ -45,7 +46,8 @@ export async function GET() {
     console.error('[/api/voice-context] Erro:', error);
 
     // Fallback: retorna system prompt sem contexto RAG
-    const fallbackBase = await getSystemPrompt();
+    const fallbackSettings = await getSettings();
+    const fallbackBase = fallbackSettings.system_prompt;
     const fallbackInstruction = buildSystemPrompt(
       'Base de conhecimento temporariamente indisponível. Responda de forma geral sobre o TecnoPUC.',
       fallbackBase
