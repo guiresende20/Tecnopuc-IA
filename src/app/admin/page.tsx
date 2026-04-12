@@ -270,18 +270,21 @@ export default function AdminPage() {
         {activeTab === 'docs' && (
           <div className="admin-panel docs-panel">
             <div className="docs-list">
-              <h3>Documentos Atuais (Base de Dados do Robô)</h3>
+              <h3>Documentos ({sources.length})</h3>
               <ul>
                 {sources.map(src => (
                   <li key={src.id}>
-                    <span><strong>{src.title}</strong> <em>({src.type})</em> - Última atualização: {new Date(src.created_at).toLocaleDateString()}</span>
-                    <div>
-                      <button className="primary-btn" style={{padding: '0.4rem 0.8rem'}} onClick={() => startEdit(src)}>Editar</button>
-                      <button className="danger-btn" onClick={() => deleteDoc(src.id)}>Apagar</button>
+                    <div className="doc-info">
+                      <span className="doc-title">{src.title}</span>
+                      <span className="doc-meta">{src.type} · {new Date(src.created_at).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div className="doc-actions">
+                      <button className="btn-icon btn-icon-edit" title="Editar" onClick={() => startEdit(src)}>✏️</button>
+                      <button className="btn-icon btn-icon-delete" title="Apagar" onClick={() => deleteDoc(src.id)}>🗑</button>
                     </div>
                   </li>
                 ))}
-                {sources.length === 0 && <li>Nenhum documento cadastrado.</li>}
+                {sources.length === 0 && <li style={{color:'#64748b', fontSize:'0.85rem'}}>Nenhum documento cadastrado.</li>}
               </ul>
             </div>
 

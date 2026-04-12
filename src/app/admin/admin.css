@@ -99,45 +99,121 @@
 
 .docs-panel {
   display: grid;
-  grid-template-columns: 3fr 2fr;
+  grid-template-columns: 2fr 3fr;
   gap: 2rem;
+  align-items: start;
+}
+
+/* Lista de documentos */
+.docs-list {
+  position: sticky;
+  top: 1rem;
+}
+
+.docs-list h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .docs-list ul {
   list-style: none;
   padding: 0;
+  margin: 0;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .docs-list li {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  background-color: #334155;
-  padding: 1rem 1.25rem;
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-}
-
-.docs-list li span {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  word-break: break-word;
-}
-
-.docs-list li > div {
-  display: flex;
+  align-items: center;
   gap: 0.5rem;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+  transition: border-color 0.15s;
+}
+
+.docs-list li:hover {
+  border-color: #475569;
+}
+
+.docs-list li .doc-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.docs-list li .doc-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.docs-list li .doc-meta {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.docs-list li .doc-actions {
+  display: flex;
+  gap: 0.3rem;
   flex-shrink: 0;
 }
 
-.docs-list li > div button {
-  flex: 1;
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: background-color 0.15s, transform 0.1s;
 }
 
+.btn-icon:active {
+  transform: scale(0.92);
+}
+
+.btn-icon-edit {
+  background-color: #0369a1;
+  color: #fff;
+}
+
+.btn-icon-edit:hover {
+  background-color: #0284c7;
+}
+
+.btn-icon-delete {
+  background-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+.btn-icon-delete:hover {
+  background-color: #ef4444;
+  color: #fff;
+}
+
+/* Área de edição / upload */
 .docs-actions {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .docs-add-text, .docs-upload {
