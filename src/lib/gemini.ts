@@ -81,7 +81,10 @@ export async function streamChat(
 
   const chat = chatModel.startChat({
     history,
-    systemInstruction: { parts: [{ text: systemPrompt }] },
+    systemInstruction: {
+      role: 'system',
+      parts: [{ text: systemPrompt }]
+    },
   });
 
   const result = await chat.sendMessageStream(lastMessage.content);
