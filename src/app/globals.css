@@ -221,3 +221,13 @@ p {
   border-radius: 4px;
   font-size: 0.85em;
 }
+
+.prose-tecnopuc a {
+  color: var(--color-ocre);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-tecnopuc a:hover {
+  color: var(--color-ocre-light);
+}
