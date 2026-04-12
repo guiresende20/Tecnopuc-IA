@@ -276,11 +276,13 @@ export default function AdminPage() {
                   <li key={src.id}>
                     <div className="doc-info">
                       <span className="doc-title">{src.title}</span>
-                      <span className="doc-meta">{src.type} · {new Date(src.created_at).toLocaleDateString('pt-BR')}</span>
-                    </div>
-                    <div className="doc-actions">
-                      <button className="btn-icon btn-icon-edit" title="Editar" onClick={() => startEdit(src)}>✏️</button>
-                      <button className="btn-icon btn-icon-delete" title="Apagar" onClick={() => deleteDoc(src.id)}>🗑</button>
+                      <div className="doc-meta-row">
+                        <span className="doc-meta">{src.type} · {new Date(src.created_at).toLocaleDateString('pt-BR')}</span>
+                        <div className="doc-actions">
+                          <button className="btn-icon btn-icon-edit" title="Editar" onClick={() => startEdit(src)}>✏️</button>
+                          <button className="btn-icon btn-icon-delete" title="Apagar" onClick={() => deleteDoc(src.id)}>🗑</button>
+                        </div>
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -292,7 +294,7 @@ export default function AdminPage() {
               <div className="docs-add-text">
                 <h3>{editingId ? 'Editando Documento Existente' : 'Adicionar Novo Texto Manual'}</h3>
                 <input type="text" placeholder="Título do Texto (Ex: Eventos 2026)" value={newDocTitle} onChange={e => setNewDocTitle(e.target.value)} />
-                <textarea rows={18} placeholder="Cole ou edite todo o conteúdo informativo aqui..." value={newDocContent} onChange={e => setNewDocContent(e.target.value)}></textarea>
+                <textarea rows={32} placeholder="Cole ou edite todo o conteúdo informativo aqui..." value={newDocContent} onChange={e => setNewDocContent(e.target.value)}></textarea>
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                   <button className="primary-btn" onClick={addOrUpdateTextDoc}>
                     {editingId ? 'Salvar e Reindexar Alterações' : 'Salvar e Indexar Texto'}
