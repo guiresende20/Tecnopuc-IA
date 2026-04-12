@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* ============================================================
+   TecnoPUC Design System
+   Baseado no Manual de Identidade Visual TecnoPUC
+   ============================================================ */
+
+:root {
+  /* --- Paleta principal --- */
+  --color-ocre:          #EA982F;
+  --color-ocre-dark:     #D07E1D;
+  --color-ocre-light:    #F2B04D;
+
+  /* Roxo institucional */
+  --color-purple-deep:   #3A245F;
+  --color-purple-mid:    #552583;
+  --color-purple-light:  #8D3D8F;
+  --color-lilac:         #CC99CC;
+
+  /* Neutros */
+  --color-gray:          #6C6E71;
+  --color-gray-light:    #E3E3E4;
+
+  /* Tipografia */
+  --color-title-light:   #161617;
+  --color-body-light:    #262626;
+  --color-title-dark:    #FFFCFB;
+  --color-body-dark:     #E3E3E4;
+
+  /* Backgrounds */
+  --color-bg-light:      #FAFAFA;
+  --color-bg-dark:       #1A0F2E;
+
+  /* Gradiente institucional */
+  --gradient-brand: linear-gradient(135deg, #3A245F 0%, #552583 55%, #8D3D8F 100%);
+  --gradient-brand-subtle: linear-gradient(135deg, #3A245F22 0%, #55258322 100%);
+
+  /* Superfícies (dark mode padrão) */
+  --surface-primary:     rgba(255, 255, 255, 0.05);
+  --surface-secondary:   rgba(255, 255, 255, 0.08);
+  --surface-border:      rgba(255, 255, 255, 0.12);
+
+  /* Espaçamentos */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  20px;
+  --radius-xl:  32px;
+
+  /* Sombras */
+  --shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md:  0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-glow-ocre:   0 0 24px rgba(234, 152, 47, 0.4);
+  --shadow-glow-purple: 0 0 24px rgba(85, 37, 131, 0.5);
+}
+
+/* ============================================================
+   Reset e Base
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  background: var(--color-bg-dark);
+  color: var(--color-body-dark);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   Tipografia
+   ============================================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-title-dark);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+p {
+  line-height: 1.65;
+  color: var(--color-body-dark);
+}
+
+/* ============================================================
+   Scrollbar customizada
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-purple-mid);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-purple-light);
+}
+
+/* ============================================================
+   Utilitários de animação
+   ============================================================ */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(234, 152, 47, 0.4); }
+  50%       { box-shadow: 0 0 0 12px rgba(234, 152, 47, 0); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.4); }
+  50%       { transform: scaleY(1); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.35s ease forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease infinite;
+}
+
+/* ============================================================
+   Componentes globais
+   ============================================================ */
+
+/* Botão primário (Ocre) */
+.btn-primary {
+  background: var(--color-ocre);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 10px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+
+.btn-primary:hover {
+  background: var(--color-ocre-dark);
+  box-shadow: var(--shadow-glow-ocre);
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Card com glassmorphism */
+.glass-card {
+  background: var(--surface-primary);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Prose (markdown renderizado) */
+.prose-tecnopuc {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-body-dark);
+}
+
+.prose-tecnopuc strong {
+  color: var(--color-title-dark);
+  font-weight: 600;
+}
+
+.prose-tecnopuc ul,
+.prose-tecnopuc ol {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.prose-tecnopuc li {
+  margin: 0.25rem 0;
+}
+
+.prose-tecnopuc code {
+  background: rgba(255,255,255,0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
