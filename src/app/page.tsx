@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { ChatWindow } from '@/components/ChatWindow';
 import { ChatInput } from '@/components/ChatInput';
 import { VoiceButton } from '@/components/VoiceButton';
@@ -10,10 +10,17 @@ export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState('');
+  const [messageSources, setMessageSources] = useState<Record<number, { source: string; similarity: string }[]>>({});
+  const [isUserTyping, setIsUserTyping] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const addMessage = (role: ChatMessage['role'], content: string) => {
     setMessages((prev) => [...prev, { role, content }]);
   };
+
+  const handleStop = useCallback(() => {
+    abortControllerRef.current?.abort();
+  }, []);
 
   const handleSend = useCallback(
     async (query: string) => {
@@ -25,37 +32,53 @@ export default function Home() {
       setMessages(newMessages);
       setIsStreaming(true);
       setStreamingText('');
+      setIsUserTyping(false);
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      let fullText = '';
+      let sources: { source: string; similarity: string }[] = [];
 
       try {
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: newMessages, query }),
+          signal: controller.signal,
         });
 
         if (!res.ok || !res.body) {
           throw new Error(`Erro na API: ${res.status}`);
         }
 
-        // Lê o stream chunk a chunk
+        const sourcesHeader = res.headers.get('X-Sources');
+        if (sourcesHeader) sources = JSON.parse(sourcesHeader);
+
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
-        let fullText = '';
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          fullText += chunk;
+          fullText += decoder.decode(value, { stream: true });
           setStreamingText(fullText);
         }
-
-        // Finaliza: adiciona mensagem completa ao histórico
-        setMessages((prev) => [...prev, { role: 'assistant', content: fullText }]);
       } catch (err) {
-        console.error('[Chat] Erro:', err);
-        addMessage('assistant', 'Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.');
+        if (err instanceof Error && err.name === 'AbortError') {
+          // Interrompido pelo usuário — mantém o texto acumulado
+        } else {
+          console.error('[Chat] Erro:', err);
+          if (!fullText) fullText = 'Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.';
+        }
       } finally {
+        if (fullText) {
+          const assistantIndex = newMessages.length;
+          if (sources.length > 0) {
+            setMessageSources((prev) => ({ ...prev, [assistantIndex]: sources }));
+          }
+          setMessages((prev) => [...prev, { role: 'assistant', content: fullText }]);
+        }
         setIsStreaming(false);
         setStreamingText('');
       }
@@ -187,10 +210,17 @@ export default function Home() {
           messages={messages}
           isStreaming={isStreaming}
           streamingText={streamingText}
+          messageSources={messageSources}
+          isUserTyping={isUserTyping}
         />
 
         {/* Input de texto */}
-        <ChatInput onSend={handleSend} disabled={isStreaming} />
+        <ChatInput
+          onSend={handleSend}
+          onStop={handleStop}
+          onTypingChange={setIsUserTyping}
+          disabled={isStreaming}
+        />
       </div>
 
       {/* Sugestões de perguntas iniciais */}

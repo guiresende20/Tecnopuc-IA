@@ -27,8 +27,12 @@ export default function AdminPage() {
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [validating, setValidating] = useState(false);
 
   const login = () => {
+    setLoginError('');
+    setValidating(true);
     const token = btoa(`${username}:${password}`);
     setAuthHeader(`Basic ${token}`);
   };
@@ -46,9 +50,15 @@ export default function AdminPage() {
         if (data.voice) setVoice(data.voice);
         if (data.maxTokens) setMaxTokens(data.maxTokens);
       } else {
-        setAuthHeader(null); // Invalid creds
+        setAuthHeader(null);
+        setLoginError('Usuário ou senha inválidos.');
       }
-    } catch (e) {}
+    } catch (e) {
+      setAuthHeader(null);
+      setLoginError('Erro de conexão. Tente novamente.');
+    } finally {
+      setValidating(false);
+    }
   };
 
   const fetchSources = async () => {
@@ -176,14 +186,17 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  if (!authHeader) {
+  if (!authHeader || validating) {
     return (
       <div className="admin-login-container">
         <div className="admin-login-box">
           <h2>TecnoPUC Admin</h2>
-          <input type="text" placeholder="Usuário" value={username} onChange={e => setUsername(e.target.value)} />
-          <input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} />
-          <button onClick={login}>Entrar</button>
+          <input type="text" placeholder="Usuário" value={username} onChange={e => setUsername(e.target.value)} onKeyDown={e => e.key === 'Enter' && login()} disabled={validating} />
+          <input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && login()} disabled={validating} />
+          {loginError && <p className="login-error">{loginError}</p>}
+          <button onClick={login} disabled={validating}>
+            {validating ? 'Verificando...' : 'Entrar'}
+          </button>
         </div>
       </div>
     );
@@ -295,7 +308,7 @@ export default function AdminPage() {
                 <h3>{editingId ? 'Editando Documento Existente' : 'Adicionar Novo Texto Manual'}</h3>
                 <input type="text" placeholder="Título do Texto (Ex: Eventos 2026)" value={newDocTitle} onChange={e => setNewDocTitle(e.target.value)} />
                 <textarea rows={32} placeholder="Cole ou edite todo o conteúdo informativo aqui..." value={newDocContent} onChange={e => setNewDocContent(e.target.value)}></textarea>
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <div className="doc-form-actions">
                   <button className="primary-btn" onClick={addOrUpdateTextDoc}>
                     {editingId ? 'Salvar e Reindexar Alterações' : 'Salvar e Indexar Texto'}
                   </button>
