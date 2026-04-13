@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { GeminiLiveChat, LiveChatStatus } from '@/lib/gemini-live';
 
 interface VoiceButtonProps {
@@ -31,6 +31,17 @@ export function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
   const [liveChat, setLiveChat] = useState<GeminiLiveChat | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Cache do contexto de voz pré-carregado em background
+  const voiceContextCache = useRef<{ systemInstruction: string; apiKey: string } | null>(null);
+
+  // Pre-fetch do contexto assim que o componente monta — remove o Supabase do caminho crítico
+  useEffect(() => {
+    fetch('/api/voice-context')
+      .then((r) => r.json())
+      .then((data) => { voiceContextCache.current = data; })
+      .catch(() => {}); // Falha silenciosa — vai buscar novamente no clique
+  }, []);
+
   const isActive = status !== 'disconnected' && status !== 'error';
 
   const handleStop = useCallback(() => {
@@ -44,11 +55,12 @@ export function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
     setStatus('connecting');
 
     try {
-      // 1. Busca o systemInstruction enriquecido com RAG e a API Key remotamente
-      const res = await fetch('/api/voice-context');
-      const { systemInstruction, apiKey } = await res.json();
+      // Usa o contexto pré-carregado ou busca agora se ainda não estava pronto
+      const context = voiceContextCache.current ?? await fetch('/api/voice-context').then((r) => r.json());
+      voiceContextCache.current = null; // Descarta cache — próxima sessão buscará contexto atualizado
 
-      // 2. Cria e inicia a sessão Gemini Live
+      const { systemInstruction, apiKey } = context;
+
       if (!apiKey) {
         throw new Error('Chave da API Gemini não localizada no servidor.');
       }
